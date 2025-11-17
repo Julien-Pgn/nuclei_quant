@@ -1,7 +1,7 @@
 # StarDist + Ilastik Segmentation Pipeline
 
 This repository provides a streamlined and robust image analysis pipeline for **nuclei-based cell segmentation** and **quantification of cell type proportions** in fluorescence microscopy images.  
-The workflow integrates a fine-tuned **StarDist** model—used for deep learning–based nuclei detection in dense or complex tissues—with **Ilastik** for interactive **object classification**.  
+The workflow integrates a fine-tuned **StarDist** model—used for deep learning–based nuclei detection in dense and complex tissues—with **Ilastik** for interactive **object classification**.  
 Together, these tools enable accurate and reproducible analysis of immunostained samples across a wide variety of tissues and model organisms, including **human**, **mouse**, and **Drosophila**.
 
 By combining automation with flexibility, this pipeline makes it easier to extract meaningful quantitative data from microscopy images with minimal manual intervention.
@@ -13,7 +13,7 @@ This repository includes all resources needed to train, apply, and analyze resul
 
 - Scripts and notebooks for **fine-tuning a StarDist model** on manually annotated images.
 - **134 manually annotated images** from human cortical organoids.
-	- See _Pigeon et al._ for details on dataset generation and annotation.
+	- See _Pigeon et al._ (doi: https://doi.org/10.1101/2025.10.27.684791) for details on dataset generation and annotation.
 - **447 pretraining images** from the **DSB2018** dataset used by the original StarDist authors.
 - The resulting **fine-tuned model weights**, compatible with **ImageJ**, **QuPath**, and **Python**.
 - Scripts for **batch segmentation** of fluorescence images using the fine-tuned model.
@@ -26,8 +26,8 @@ This repository includes all resources needed to train, apply, and analyze resul
 
 The image analysis pipeline was **assembled and adapted** by _Julien Pigeon_ in the Hassan Lab at the Paris Brain Institute, integrating existing open-source tools including **StarDist** and **Ilastik**. It was used in:
 
-> **Pigeon J.**, et al. (2026). A Post-translational Switch Fine-Tunes Neurogenic Output of Human Cortical Progenitors via Chromatin Remodeling
-> [Journal name, DOI or preprint link once available]
+> **Pigeon J.**, et al. Post-translational Tuning of Human Cortical Progenitor Neuronal output.
+> [Preprint, BioRxiv, doi: https://doi.org/10.1101/2025.10.27.684791]
 
 If you use this repository or any derivative models, please cite the above paper with the original publications for [StarDist](https://github.com/stardist/stardist) and [Ilastik](https://github.com/ilastik/ilastik) as the pipeline is built upon these frameworks.  on these two powerful tools. For details on their underlying methods and implementation, refer to their respective GitHub repositories and documentation.
 
@@ -39,7 +39,7 @@ Requirements
 - Tested on macOS and Linux  
 - Required packages:
 
-  ```bash
+```bash
   pip install stardist csbdeep tensorflow numpy matplotlib pandas scikit-image jupyter
 ```
 
@@ -56,9 +56,10 @@ The **`stardist_haug2`** model can be used directly without retraining. It has b
 
 - **Python** – ready-to-use model for analysis scripts and notebooks.
 - **ImageJ / Fiji** – exported TensorFlow model.
-    - Check the TensorFlow version used in your ImageJ/Fiji installation and select the corresponding model export. It seems that new verisons of ImageJ or FIJI don't include TF1.15 thus we exported another model compatible with TF1.12. 
+    - Check the TensorFlow version used in your ImageJ/Fiji installation and select the corresponding model export. It seems that new verisons of ImageJ or FIJI don't include TF1.15 anymore.
 - **QuPath** – exported as `stardist_haug2.pb` for direct import.
-    - Refer to the official StarDist–QuPath integration guide for usage instructions.
+    - Refer to the official StarDist–QuPath integration guide for usage instructions here: [Stardist_Qupath](https://qupath.readthedocs.io/en/stable/docs/deep/stardist.html)
+
 ### Segmentation script:
 All input images must be in **TIFF format**. In Pigeon,. et al we had images with **four channels** (DAPI, 488, 555, and 647). Place these images in a dedicated folder, then specify this path when running `segmentation.py`.  
 
@@ -73,13 +74,15 @@ Because staining and imaging conditions can produce variable signal intensities 
 Run the provided Jupyter notebook to compute **average image intensities** and identify **three representative images** (low, medium, and high intensity) for the fluorescence channel of interest in each clone or condition.  For instance, in _Pigeon et al._, five CRISPR/Cas9 clones were analyzed, resulting in **15 training images** (3 intensity levels × 5 conditions).
 
 After selection, copy and paste the representative images into another folder and crop them to speed up Ilastik loading and training. You must then **re-segment** the cropped regions using the StarDist model to ensure consistency between training and full-image predictions.
+
 ### Preparing data for Ilastik
 
 Since Ilastik handles `.h5` masks more efficiently than TIFF label files, it is recommended to convert:
 - All segmentation masks from the cropped images
 - All segmentation masks from the full dataset
 
-to **HDF5 (.h5)** format.  
+to **HDF5 (.h5)** format.
+
 Conversion scripts are provided for this step.
 
 ### Object classification in Ilastik
@@ -94,6 +97,7 @@ In addition, include two other categories:
 Note: In the absence of a fluorescence signal, classification accuracy decreases because Ilastik relies heavily on intensity-based features.
 
 Once the classifier performs satisfactorily, launch the **batch object classification** over all segmented images. Save the resulting quantitative data as `.csv` files for downstream aggregation.
+
 ### Quantification
 
 The final Jupyter notebook aggregates all `.csv` files generated by Ilastik and counts the number of cells per category. It outputs a single **Excel file** summarizing cell-type proportions, suitable for direct use in statistical analyses.
@@ -131,4 +135,5 @@ Furthermore, in this script we also incorporated a decomposition of the file nam
     - Output: one **Excel summary file** with cell-type proportions per condition.
     - For organoids, values are **summed across 4–6 slices** to represent full 3D composition.
 
+---
 
